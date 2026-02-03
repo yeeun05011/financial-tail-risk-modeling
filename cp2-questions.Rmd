@@ -1,6 +1,6 @@
 ---
-title: "Statistics 2: Computer Practical 2 (Interval estimation)"
-author: "Yeeun Lee (Student ID: 2499266)"
+title: "Interval estimation"
+author: "Yeeun Lee"
 output:
   pdf_document:
     number_sections: yes
@@ -23,22 +23,8 @@ knitr::opts_chunk$set(echo = TRUE)
 set.seed(12345)
 ```
 
-# Instructions
-
-1. Reports should be handed in **as a single PDF file** using Blackboard, by noon on the due date. There are 5 marks assigned to submitting in this format. RMarkdown, image, word, zip files, for example, will **not** receive these marks.
-
-1. You can work alone or in a group with up to two other people.
-
-1. One person per group should hand in a report on blackboard. The names and student numbers of all group members must be on the first page.
-
-1. Your answers should combine text and code snippets in R. It is recommended that you use RMarkdown to prepare your reports, since this is typically easier for students, but this is not mandatory.
-
-1. You must explain what you are doing clearly to obtain full marks on each question. You can use comments (which start with #) to annotate your code. Mathematical derivations can be written using LaTeX commands in RMarkdown or on paper, with a photo then appended to the end of the PDF being submitted.
-
-1. This practical will count towards 10% of your final grade. It is out of 25 marks. (5 marks are for submitting as a pdf.)
-
 # Data description
-In this coursework we are going to be modelling extreme losses in monthly return of Standard and Poor's top 500 publicly listed stocks in the US between 1871 and 2023. Extreme losses represent tail risk, which are rare but severe events that can cause catastrophic portfolio damage, so are of vital importance to portfolio managers. Extreme loss has already been calculated from data collected and prepared by the Economist [Robert Shiller](http://www.econ.yale.edu/~shiller/data.htm) by considering the bottom 5% of monthly returns.
+In this work we are going to be modelling extreme losses in monthly return of Standard and Poor's top 500 publicly listed stocks in the US between 1871 and 2023. Extreme losses represent tail risk, which are rare but severe events that can cause catastrophic portfolio damage, so are of vital importance to portfolio managers. Extreme loss has already been calculated from data collected and prepared by the Economist [Robert Shiller](http://www.econ.yale.edu/~shiller/data.htm) by considering the bottom 5% of monthly returns.
 
 First we begin by loading in the data and plotting a histogram of the extreme loss values.
 
@@ -631,4 +617,3 @@ My simulated coverage (which came out to 0.9589) is really close to the 96% targ
 
 `r if(!params$soln) {"\\end{comment}"}`
 
-[5 marks] Submitting your coursework as a pdf.
