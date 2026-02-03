@@ -1,0 +1,357 @@
+---
+title: "Statistics 2: Computer Practical 2 (Interval estimation)"
+output:
+  pdf_document:
+    number_sections: yes
+    fig_height: 4
+    latex_engine: xelatex
+  html_document:
+    number_sections: yes
+urlcolor: blue
+params:
+  soln: yes
+header-includes:
+- \usepackage{comment}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+set.seed(12345)
+```
+
+# Instructions
+
+1. Reports should be handed in **as a single PDF file** using Blackboard, by noon on the due date. There are 5 marks assigned to submitting in this format. RMarkdown, image, word, zip files, for example, will **not** receive these marks.
+
+1. You can work alone or in a group with up to two other people.
+
+1. One person per group should hand in a report on blackboard. The names and student numbers of all group members must be on the first page.
+
+1. Your answers should combine text and code snippets in R. It is recommended that you use RMarkdown to prepare your reports, since this is typically easier for students, but this is not mandatory.
+
+1. You must explain what you are doing clearly to obtain full marks on each question. You can use comments (which start with #) to annotate your code. Mathematical derivations can be written using LaTeX commands in RMarkdown or on paper, with a photo then appended to the end of the PDF being submitted.
+
+1. This practical will count towards 10% of your final grade. It is out of 25 marks. (5 marks are for submitting as a pdf.)
+
+# Data description
+In this coursework we are going to be modelling extreme losses in monthly return of Standard and Poor's top 500 publicly listed stocks in the US between 1871 and 2023. Extreme losses represent tail risk, which are rare but severe events that can cause catastrophic portfolio damage, so are of vital importance to portfolio managers. Extreme loss has already been calculated from data collected and prepared by the Economist [Robert Shiller](http://www.econ.yale.edu/~shiller/data.htm) by considering the bottom 5% of monthly returns.
+
+First we begin by loading in the data and plotting a histogram of the extreme loss values.
+
+```{r}
+data = read.csv("data.csv")$x
+hist(data)
+```
+
+As typical with this type of data, we assume that our observed extreme losses, $\mathbf{x}$, are realisations from a [Pareto distribution](https://en.wikipedia.org/wiki/Pareto_distribution). We assume that $x_0 > 0$ is equal to the minimum value of our observations $\textbf{x}$.
+
+Therefore we let $X_1,...X_n$ be independent identically distributed random variables drawn from a Pareto distribution with statistical parameter $\alpha > 1$.
+$$ \textbf{X} \sim \textrm{Pareto}(x_0, \alpha)$$
+
+The probability density function for a Pareto distribution is
+$$f_{X}(x)=\begin{cases}\frac{\alpha x_0^{\alpha }}{x^{\alpha +1}} & x \geq x_0, \\ 0 & x< x_0 .\end{cases}$$
+
+**Question 1** [1 marks] Why might the "independent and identically distributed" model assumptions be invalid? 
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+
+The independent and identically distributed assumption might not be valid for this data, mainly because it is time-series data1. This can cause problems with both parts of the i.i.d. assumption.
+
+1. Not Independent: Financial data like this often shows what is called autocorrelation. This means a bad month (an extreme loss) might make it more likely that the next month will also be a bad month2. Think about a financial crisis: you don't just get one single bad month, but often a whole cluster of them together ("volatility clustering"). This breaks the "independent" assumption, as the data points clearly influence each other.
+
+2. Not Identically Distributed: The dataset covers a huge time span, from 1871 to 20233. The economy and the stock market today are completely different from how they were in the 1800s or early 1900s, due to new rules, technology, and major events like wars. It's very likely that the underlying process causing these losses (and therefore the parameter $\alpha$) has changed over time. If the distribution isn't the same for the whole 150+ years, then the data isn't "identically distributed."
+
+`r if(!params$soln) {"\\end{comment}"}`
+
+# Methods of moments estimator
+**Question 2** [2 marks] Show that the methods of moment's estimator for $\alpha$, $\hat{\alpha}_{MOM} = \frac{\bar{X}}{\bar{X}-x_0}$ where $\bar{X}=\frac{1}{n}\sum_{i=1}^{n}x_i$.
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+The probability density function (PDF) of the Pareto distribution is  
+$$f_X(x) = \frac{\alpha x_0^\alpha}{x^{\alpha+1}}, \quad x \ge x_0.$$
+
+The expected value $E[X]$ is computed as follows:
+
+$$
+\begin{aligned}
+E[X] &= \int_{x_0}^\infty x \cdot f_X(x) \, dx \\
+     &= \int_{x_0}^\infty x \cdot \frac{\alpha x_0^\alpha}{x^{\alpha+1}} \, dx \\
+     &= \alpha x_0^\alpha \int_{x_0}^\infty x \cdot x^{-\alpha-1} \, dx \\
+     &= \alpha x_0^\alpha \int_{x_0}^\infty x^{-\alpha} \, dx \\
+     &= \alpha x_0^\alpha \left[ \frac{x^{-\alpha+1}}{-\alpha+1} \right]_{x_0}^\infty \\
+     &= \alpha x_0^\alpha \left[ \frac{x^{1-\alpha}}{1-\alpha} \right]_{x_0}^\infty.
+\end{aligned}
+$$
+
+Given the assumption $\alpha > 1$, we have $1-\alpha < 0$.  
+Thus, as $x \to \infty$, $x^{1-\alpha} \to 0$.
+
+$$
+\begin{aligned}
+E[X] &= \alpha x_0^\alpha \left( 0 - \frac{x_0^{1-\alpha}}{1-\alpha} \right) \\
+     &= \alpha x_0^\alpha \left( \frac{x_0^{1-\alpha}}{\alpha-1} \right) \\
+     &= \frac{\alpha \cdot x_0^{\alpha + (1-\alpha)}}{\alpha-1} \\
+     &= \frac{\alpha x_0}{\alpha-1}.
+\end{aligned}
+$$
+
+The sample mean is  
+$$\bar{X} = \frac{1}{n} \sum_{i=1}^n x_i.$$
+
+The method of moments sets the population moment equal to the sample moment:  
+$$\frac{\alpha x_0}{\alpha-1} = \bar{X}.$$
+
+Solve for $\alpha$:
+
+$$
+\begin{aligned}
+\alpha x_0 &= \bar{X} (\alpha - 1) \\
+\alpha x_0 &= \alpha \bar{X} - \bar{X} \\
+\bar{X}    &= \alpha \bar{X} - \alpha x_0 \\
+\bar{X}    &= \alpha (\bar{X} - x_0) \\
+\alpha     &= \frac{\bar{X}}{\bar{X} - x_0}.
+\end{aligned}
+$$
+
+
+Thus, the method-of-moments estimator of $\alpha$ is  
+$$\hat{\alpha}_{\text{MOM}} = \frac{\bar{X}}{\bar{X} - x_0}.$$
+`r if(!params$soln) {"\\end{comment}"}`
+
+**Question 3** [2 marks] Compute and report the method of moments estimate for $\alpha$, for the extreme losses data. We assume $x_0$ is the minimum value of $x$ in our dataset.
+
+```{r}
+x_0 = min(data)
+x_0
+```
+I recommend writing a function such as
+
+```{r}
+## input: count data xs
+## output: method of moments estimate of alpha
+compute_mom_estimate <- function(xs) {
+## perform computations
+  x_bar <- mean(xs)
+  x_0_val <- min(xs)
+  alpha_mom <- x_bar / (x_bar - x_0_val)
+  return(alpha_mom)
+}
+```
+
+which you can then call on data to compute the corresponding estimates.
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+```{r}
+#1. Call the function defined above on our data
+alpha_mom_estimate <- compute_mom_estimate(data)
+#2. Report the estimate
+
+    print(alpha_mom_estimate)
+```
+The MOM estimate of α for the extreme losses data is approximately 2.83312.
+`r if(!params$soln) {"\\end{comment}"}`
+
+# Maximum likelihood estimator
+**Question 4** [3 marks] Show that the Maximum Likelihood (ML) estimator for $\alpha$, $\hat{\alpha}_{MLE}$ is
+$$ \hat{\alpha}_{MLE} = \frac{n}{\sum_{i=1}^{n}\log(X_i/x_0)}.$$ Why would this model not be regular if we were also looking for an estimator for $x_0$?
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+
+`r if(!params$soln) {"\\end{comment}"}`
+
+**Question 5** [2 marks] Compute and report the ML estimate for $\alpha$ for the extreme losses data assuming the same value of $x_0$ as before.
+I recommend writing a function such as
+````{r}
+## input: count data xs
+## output: maximum likelihood estimates of alpha
+compute_mle_estimate <- function(xs) {
+## perform computations
+## ...
+  n <- length(xs)
+  # x_0 is assumed to be the minimum value of the dataset
+  x_0_val <- min(xs)
+  
+  # calculate the sum term in the denominator
+  sum_log_term <- sum(log(xs / x_0_val))
+  
+  # calculate MLE
+  alpha_mle <- n / sum_log_term
+  
+return(alpha_mle)
+}
+
+which you can then call on data to compute the corresponding estimates.
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution**
+
+--- *put your solution here* --- 
+
+
+The ML estimate of α for the extreme losses data is approximately 2.642698.
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+
+## input: count data xs
+## output: maximum likelihood estimates of alpha
+compute_mle_estimate <- function(xs) {
+  ## perform computations
+  n <- length(xs)
+  # x_0 is assumed to be the minimum value of the dataset
+  x_0_val <- min(xs)
+  # calculate the sum term in the denominator
+  sum_log_term <- sum(log(xs / x_0_val))
+  # calculate MLE
+  alpha_mle <- n / sum_log_term
+  return(alpha_mle)
+}
+
+1. Call the function defined above on our data
+alpha_mle_estimate <- compute_mle_estimate(data)
+2. Report the estimate
+    
+    
+    print(alpha_mle_estimate)
+
+
+The ML estimate of α for the extreme losses data is approximately 2.601.
+
+`r if(!params$soln) {"\\end{comment}"}`
+
+# Mean squared error of the estimators
+Finding the mean square error (MSE) of our estimators can be a useful quantity if we know the true value of our parameter, $\alpha^{\star}$. The MSE is comprised of two terms the variance and bias.
+
+It can be helpful to re-write our ML estimator, $\hat{\alpha}_{MLE}(\mathbf{X})$, in terms of known distributions to help us work out if it is unbiased. Here we let 
+$$Y_i = \log\Bigg(\frac{X_i}{x_0}\Bigg)\sim \textrm{Exponential}(\alpha),$$ 
+so each $Y_i$ is an independent identically distributed exponential random variable with rate $\alpha$ (the shape parameter from the Pareto distribution).
+Since the sum of independent identically distributed exponential variables is Gamma distributed, we define
+$$Z = \sum_{i=1}^{n}Y_i \sim \textrm{Gamma}(n,\alpha).$$
+
+It is also useful to know that
+$$\mathbb{E}\Bigg[\frac{1}{Z}\Bigg] = \frac{\alpha}{n-1}.$$
+
+**Question 6** [1 mark] Is the ML estimator unbiased?
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+
+`r if(!params$soln) {"\\end{comment}"}`
+
+**Question 7** [2 marks] Assuming $\alpha^\star = 2.6$, compute and report approximate mean-squared errors for
+\begin{enumerate}
+  \item the method of moments estimators of $\alpha$,
+  \item the maximum likelihood estimators of $\alpha$.
+\end{enumerate}
+Assume $n=92$.
+
+You may find the following functions from Tutorial Sheet 1 useful.
+
+```{r}
+qpareto <- function(u, x0, theta){
+  stopifnot(all(x0 > 0), all(theta > 0), all(u >= 0), all(u <= 1))
+  x0 * (1 - u)^(-1/theta) 
+}
+rpareto <- function(n, x0, theta){
+  stopifnot(all(x0 > 0), all(theta > 0), n >= 0) 
+  u <- runif(n)
+  qpareto(u, x0 = x0, theta = theta) 
+}
+```
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+
+`r if(!params$soln) {"\\end{comment}"}`
+
+# Cramer-Rao lower bound
+
+**Question 8**. [3 marks] Use simulation of different length of sequences of estimators to explore how the variance of the maximum likelihood estimator, $\hat{\alpha}_n(\mathbf{X})$, compares to the Cramer-Rao lower bound (CRLB).  Plot a graph of length of sequence against the CRLB and variance of your sequences of estimators to compare your results. Using this graph, explain if the maximum likelihood estimator is an efficient estimator.
+
+Please use the following values for the length of sequences:
+```{r}
+ns = c(5, 10, 20, 100, 500, 1000)
+```
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+
+# Asymptotically exact confidence intervals
+**Question 9**. [2 marks] Compute and report the endpoints of the asymptotically exact 96% Wald confidence intervals for $\alpha$. 
+
+I recommend that you write a function that computes the observed confidence intervals' end points. Note $\beta$ is used here as an argument for the function to represent the allowed error. This is because $\alpha$ is our statistical parameter.
+
+```{r}
+compute_CI_endpoints <- function(xs, beta) {
+  # your code
+  L <- 0 # obviously wrong
+  U <- 1 # obviously wrong
+  c(L,U)
+}
+```
+
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+
+`r if(!params$soln) {"\\end{comment}"}`
+
+**Question 10**. [2 marks] Using many simulations, approximate the coverage of the asymptotically exact $1-\alpha$ confidence intervals corresponding to your answer the previous question, for $n = 92$, the length of the data. Assume the true value of the parameter is 2.6. Comment on the coverage of the confidence intervals and if it is what you expected.
+
+I recommend that you write a function
+
+```{r}
+approximate.coverage <- function(alpha, beta, trials) {
+  
+  coverage_alpha <- 0 # hopefully wrong
+  coverage_alpha
+}
+```
+
+`r if(!params$soln) {"\\begin{comment}"}`
+
+**Solution** 
+
+--- *put your solution here* --- 
+
+`r if(!params$soln) {"\\end{comment}"}`
+
+[5 marks] Submitting your coursework as a pdf.
